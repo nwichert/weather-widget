@@ -9,18 +9,25 @@ var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
 var core_1 = require('@angular/core');
-var AppComponent = (function () {
-    function AppComponent() {
+var SpeedUnitPipe = (function () {
+    function SpeedUnitPipe() {
     }
-    AppComponent = __decorate([
-        core_1.Component({
-            selector: 'my-app',
-            template: "\n        <div class=\"container\">\n            <div class=\"col-xs-5\">\n                <weather-widget></weather-widget>\n            </div>\n        </div>\n    ",
-            styles: ["\n        .container {\n            padding-top: 5rem;\n        }\n    "]
+    SpeedUnitPipe.prototype.transform = function (speed, unitType) {
+        switch (unitType) {
+            case "mph":
+                var miles = speed * 1.6;
+                return miles + " kph";
+            default:
+                return speed + " mph";
+        }
+    };
+    SpeedUnitPipe = __decorate([
+        core_1.Pipe({
+            name: 'speedUnit'
         }), 
         __metadata('design:paramtypes', [])
-    ], AppComponent);
-    return AppComponent;
+    ], SpeedUnitPipe);
+    return SpeedUnitPipe;
 }());
-exports.AppComponent = AppComponent;
-//# sourceMappingURL=app.component.js.map
+exports.SpeedUnitPipe = SpeedUnitPipe;
+//# sourceMappingURL=speed-unit.pipe.js.map
