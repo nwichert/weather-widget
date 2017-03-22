@@ -11,16 +11,17 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 var core_1 = require('@angular/core');
 var weather_service_1 = require('../service/weather.service');
 var weather_1 = require('../model/weather');
+var constants_1 = require('../constants/constants');
 var WeatherComponent = (function () {
     function WeatherComponent(service) {
         this.service = service;
         this.weatherData = new weather_1.Weather(null, null, null, null, null);
         this.currentSpeedUnit = "kph";
-        this.currenTempUnit = "fahrenheit";
+        this.currentTempUnit = "fahrenheit";
         this.currentLocation = "";
-    } // this is dependency injection
-    // constructor initializes class; creates a copy of it
-    // keep logic minimal in any constructor
+        this.icons = new Skycons();
+        this.dataReceived = false;
+    }
     WeatherComponent.prototype.ngOnInit = function () {
         this.getCurrentLocation();
     };
@@ -42,17 +43,50 @@ var WeatherComponent = (function () {
                 _this.weatherData.wind = weather["currently"]["windSpeed"],
                 _this.weatherData.humidity = weather["currently"]["humidity"],
                 _this.weatherData.icon = weather["currently"]["icon"];
-            console.log("Weather: ", _this.weatherData); // TODO REMOVE
+            _this.setIcon();
+            _this.dataReceived = true;
         }, function (err) { return console.error(err); });
     };
     WeatherComponent.prototype.getLocationName = function () {
         var _this = this;
         this.service.getLocationName(this.pos.coords.latitude, this.pos.coords.longitude)
             .subscribe(function (location) {
-            console.log(location); // TODO REMOVE
-            _this.currentLocation = location["results"][1]['formatted_address'];
-            console.log("Name: ", _this.currentLocation); // TODO: REMOVE
+            _this.currentLocation = location["results"][1]["formatted_address"];
         });
+    };
+    WeatherComponent.prototype.toggleUnits = function () {
+        this.toggleTempUnits();
+        this.toggleSpeedUnits();
+    };
+    WeatherComponent.prototype.toggleTempUnits = function () {
+        if (this.currentTempUnit == "fahrenheit") {
+            this.currentTempUnit = "celsius";
+        }
+        else {
+            this.currentTempUnit = "fahrenheit";
+        }
+    };
+    WeatherComponent.prototype.toggleSpeedUnits = function () {
+        if (this.currentSpeedUnit == "kph") {
+            this.currentSpeedUnit = "mph";
+        }
+        else {
+            this.currentSpeedUnit = "kph";
+        }
+    };
+    WeatherComponent.prototype.setIcon = function () {
+        this.icons.add("icon", this.weatherData.icon);
+        this.icons.play();
+    };
+    WeatherComponent.prototype.setStyles = function () {
+        if (this.weatherData.icon) {
+            this.icons.color = constants_1.WEATHER_COLORS[this.weatherData.icon]["color"];
+            return constants_1.WEATHER_COLORS[this.weatherData.icon];
+        }
+        else {
+            this.icons.color = constants_1.WEATHER_COLORS["default"]["color"];
+            return constants_1.WEATHER_COLORS["default"];
+        }
     };
     WeatherComponent = __decorate([
         core_1.Component({

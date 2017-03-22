@@ -4,6 +4,10 @@ import { WeatherService } from '../service/weather.service';
 
 import { Weather } from '../model/weather';
 
+import { WEATHER_COLORS } from '../constants/constants';
+
+declare var Skycons: any;
+
 @Component({
   moduleId: module.id,
   selector: 'weather-widget',
@@ -15,12 +19,12 @@ export class WeatherComponent implements OnInit {
   pos: Position;
   weatherData = new Weather(null, null, null, null, null);
   currentSpeedUnit = "kph";
-  currenTempUnit = "fahrenheit";
+  currentTempUnit = "fahrenheit";
   currentLocation = "";
+  icons = new Skycons();
+  dataReceived = false;
 
-  constructor(private service: WeatherService) { } // this is dependency injection
-  // constructor initializes class; creates a copy of it
-  // keep logic minimal in any constructor
+  constructor(private service: WeatherService) { }
 
   ngOnInit() {
     this.getCurrentLocation();
@@ -40,11 +44,12 @@ export class WeatherComponent implements OnInit {
     this.service.getCurrentWeather(this.pos.coords.latitude, this.pos.coords.longitude)
       .subscribe(weather => {
         this.weatherData.temp = weather["currently"]["temperature"],
-        this.weatherData.summary = weather["currently"]["summary"],
-        this.weatherData.wind = weather["currently"]["windSpeed"],
-        this.weatherData.humidity = weather["currently"]["humidity"],
-        this.weatherData.icon = weather["currently"]["icon"]
-        console.log("Weather: ", this.weatherData); // TODO REMOVE
+          this.weatherData.summary = weather["currently"]["summary"],
+          this.weatherData.wind = weather["currently"]["windSpeed"],
+          this.weatherData.humidity = weather["currently"]["humidity"],
+          this.weatherData.icon = weather["currently"]["icon"]
+        this.setIcon();
+        this.dataReceived = true;
       },
       err => console.error(err));
   }
@@ -52,9 +57,43 @@ export class WeatherComponent implements OnInit {
   getLocationName() {
     this.service.getLocationName(this.pos.coords.latitude, this.pos.coords.longitude)
       .subscribe(location => {
-        console.log(location); // TODO REMOVE
-        this.currentLocation = location["results"][1]['formatted_address'];
-        console.log("Name: ", this.currentLocation); // TODO: REMOVE
+        this.currentLocation = location["results"][1]["formatted_address"];
       });
+  }
+
+  toggleUnits() {
+    this.toggleTempUnits();
+    this.toggleSpeedUnits();
+  }
+
+  toggleTempUnits() {
+    if (this.currentTempUnit == "fahrenheit") {
+      this.currentTempUnit = "celsius";
+    } else {
+      this.currentTempUnit = "fahrenheit";
+    }
+  }
+
+  toggleSpeedUnits() {
+    if (this.currentSpeedUnit == "kph") {
+      this.currentSpeedUnit = "mph";
+    } else {
+      this.currentSpeedUnit = "kph";
+    }
+  }
+
+  setIcon() {
+    this.icons.add("icon", this.weatherData.icon);
+    this.icons.play();
+  }
+
+  setStyles(): Object {
+    if (this.weatherData.icon) {
+      this.icons.color = WEATHER_COLORS[this.weatherData.icon]["color"];
+      return WEATHER_COLORS[this.weatherData.icon];
+    } else {
+      this.icons.color = WEATHER_COLORS["default"]["color"];
+      return WEATHER_COLORS["default"];
+    }
   }
 }

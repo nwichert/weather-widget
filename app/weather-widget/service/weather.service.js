@@ -8,11 +8,12 @@ var __decorate = (this && this.__decorate) || function (decorators, target, key,
 var __metadata = (this && this.__metadata) || function (k, v) {
     if (typeof Reflect === "object" && typeof Reflect.metadata === "function") return Reflect.metadata(k, v);
 };
-var core_1 = require('@angular/core'); // always the first line in creating services
+var core_1 = require('@angular/core');
 var http_1 = require('@angular/http');
 var Observable_1 = require('rxjs/Observable');
 require('rxjs/add/operator/map');
 require('rxjs/add/operator/catch');
+require('rxjs/add/observable/throw');
 var constants_1 = require('../constants/constants');
 var WeatherService = (function () {
     function WeatherService(jsonp, http) {
@@ -24,19 +25,18 @@ var WeatherService = (function () {
             return Observable_1.Observable.create(function (observer) {
                 navigator.geolocation.getCurrentPosition(function (pos) {
                     observer.next(pos);
-                }),
-                    function (err) {
-                        return Observable_1.Observable.throw(err);
-                    };
+                }, function (err) {
+                    observer.error(err);
+                });
             });
         }
         else {
-            return Observable_1.Observable.throw("Geolocation is not available on this browser, sorry!");
+            return Observable_1.Observable.throw("Geolocation is not available");
         }
     };
     WeatherService.prototype.getCurrentWeather = function (lat, long) {
-        var url = constants_1.FORECAST_ROOT + constants_1.FORECAST_KEY + "/" + lat + "," + long; // constants are inmutable (let is a variable and can be changed)
-        var queryParams = "?callback=JSONP_CALLBACK"; // parts of data you pass in at the end of the url, always start with "?"
+        var url = constants_1.FORECAST_ROOT + constants_1.FORECAST_KEY + "/" + lat + "," + long;
+        var queryParams = "?callback=JSONP_CALLBACK";
         return this.jsonp.get(url + queryParams)
             .map(function (data) { return data.json(); })
             .catch(function (err) {
@@ -51,7 +51,7 @@ var WeatherService = (function () {
             .map(function (loc) { return loc.json(); })
             .catch(function (err) {
             console.error("Unable to get location - ", err);
-            return Observable_1.Observable.throw.apply(err);
+            return Observable_1.Observable.throw(err);
         });
     };
     WeatherService = __decorate([

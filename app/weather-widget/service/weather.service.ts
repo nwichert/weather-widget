@@ -1,34 +1,36 @@
-import { Injectable } from '@angular/core'; // always the first line in creating services
+import { Injectable } from '@angular/core';
 import { Jsonp, Http } from '@angular/http';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/catch';
+import 'rxjs/add/observable/throw';
 
 import { FORECAST_KEY, FORECAST_ROOT, GOOGLE_KEY, GOOGLE_ROOT } from '../constants/constants';
 
-@Injectable() // always add for each service even if you don't use it
+@Injectable()
 export class WeatherService {
 
   constructor(private jsonp: Jsonp, private http: Http) { }
 
-  getCurrentLocation(): Observable<any> { // Tuples are an array that only stores 2 elements
+  getCurrentLocation(): Observable<any> {
     if (navigator.geolocation) {
       return Observable.create(observer => {
-        navigator.geolocation.getCurrentPosition(pos => {
-          observer.next(pos);
-        }),
+        navigator.geolocation.getCurrentPosition(
+          pos => {
+            observer.next(pos);
+          },
           err => {
-            return Observable.throw(err);
-          }
+            observer.error(err);
+          });
       });
     } else {
-      return Observable.throw("Geolocation is not available on this browser, sorry!");
+      return Observable.throw("Geolocation is not available");
     }
   }
 
   getCurrentWeather(lat: number, long: number): Observable<any> {
-    const url = FORECAST_ROOT + FORECAST_KEY + "/" + lat + "," + long; // constants are inmutable (let is a variable and can be changed)
-    const queryParams = "?callback=JSONP_CALLBACK"; // parts of data you pass in at the end of the url, always start with "?"
+    const url = FORECAST_ROOT + FORECAST_KEY + "/" + lat + "," + long;
+    const queryParams = "?callback=JSONP_CALLBACK";
 
     return this.jsonp.get(url + queryParams)
       .map(data => data.json())
@@ -46,7 +48,7 @@ export class WeatherService {
       .map(loc => loc.json())
       .catch(err => {
         console.error("Unable to get location - ", err);
-        return Observable.throw.apply(err);
+        return Observable.throw(err);
       });
   }
 }
