@@ -1,1 +1,2 @@
-# angular2-skeleton
+# weather widget app
+npm install to pull down dependencies
